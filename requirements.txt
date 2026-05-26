@@ -2,7 +2,7 @@
 kaggle
 pandas
 numpy
-scikit-learn
+scikit-learn = 1.3.2
 imbalanced-learn
 xgboost
 lightgbm
