@@ -18,17 +18,18 @@ def carregar_artefatos():
     # Baixa o Modelo se não existir localmente no servidor
     if not os.path.exists(NOME_MODELO):
         with st.spinner("Baixando o modelo preditivo..."):
-            gdown.download(f"https://drive.google.com/uc?id={MODEL_ID}", NOME_MODELO, quiet=True)
+            # Usando o parâmetro id de forma direta e limpa
+            gdown.download(id=MODEL_ID, output=NOME_MODELO, quiet=True)
             
     # Baixa o Pré-processador se não existir localmente
     if not os.path.exists(NOME_PREPROCESSOR):
         with st.spinner("Baixando o pré-processador de dados..."):
-            gdown.download(f"https://drive.google.com/uc?id={PREPROCESSOR_ID}", NOME_PREPROCESSOR, quiet=True)
+            # Correção aqui: passando o ID diretamente de forma isolada
+            gdown.download(id=PREPROCESSOR_ID, output=NOME_PREPROCESSOR, quiet=True)
             
     modelo = joblib.load(NOME_MODELO)
     preprocessor = joblib.load(NOME_PREPROCESSOR)
     return modelo, preprocessor
-
 # Carrega os cérebros do projeto
 modelo, preprocessor = carregar_artefatos()
 
