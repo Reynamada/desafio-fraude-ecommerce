@@ -5,7 +5,7 @@ import os
 import requests
 
 # 1. Configuração do ID do arquivo e nome local
-ID_DO_ARQUIVO = "https://drive.google.com/file/d/14oKxo6G5YiOMHVDEq5rvbDefZLGNnNaV/view?usp=sharing"  # Substitua pelo ID real do seu arquivo
+ID_DO_ARQUIVO = "GOOGLE_DRIVE_MODEL_ID"  # Substitua pelo ID real do seu arquivo
 NOME_ARQUIVO_LOCAL = "ModeloFinal_SMOTE_LightGBM.pkl"
 
 @st.cache_resource
