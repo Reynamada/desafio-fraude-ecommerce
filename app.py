@@ -54,7 +54,7 @@ with st.form("formulario_fraude"):
     # idade = st.slider("Idade do Cliente", 18, 100, 35)
 
     # Botão de envio do formulário
-    submetido = st.form_submit_with_button("⚡ Avaliar Risco de Fraude")
+    submetido = st.form_submit_button("⚡ Avaliar Risco de Fraude")
 
 # 4. Lógica de Predição após o clique
 if submetido:
