@@ -53,8 +53,8 @@ with st.form("formulario_fraude"):
     submetido = st.form_submit_button("⚡ Avaliar Risco de Fraude")
 
 if submetido:
-    # 1. Criamos os dados com as 13 colunas originais do dataset
-    dados_usuario = pd.DataFrame([{
+    # 1. Criamos um dicionário com TODAS as colunas possíveis mapeadas no modelo
+    dados_valores = {
         "amount": float(amt),
         "merchant_category": str(category),
         "gender": str(gender),
@@ -69,33 +69,38 @@ if submetido:
         "avg_amount_user": float(amt),
         "total_transactions_user": float(5),
         "shipping_distance_km": float(15.0)
-    }])
+    }
     
-    # 2. ORDEM EXATA DAS COLUNAS (Alinhamento com o X_train do Colab)
-    # O preprocessor falha se a ordem das colunas originais for alterada.
-    # Esta lista abaixo reflete a ordem padrão esperada pelo seu pipeline:
-    ordem_original_colunas = [
-        "bin_country", "channel", "country", "three_ds_flag", "avs_match", 
-        "cvv_result", "merchant_category", "amount", "account_age_days", 
-        "promo_used", "avg_amount_user", "total_transactions_user", "shipping_distance_km"
-    ]
-    
-    # Reordenamos o DataFrame de 1 linha para bater exatamente com o formato do treino
-    dados_usuario = dados_usuario[ordem_original_colunas]
-    
-    # 3. Forçar explicitamente a conversão de tipos de cada coluna antes do transform
-    colunas_numericas = ["amount", "account_age_days", "promo_used", "avg_amount_user", "total_transactions_user", "shipping_distance_km"]
-    colunas_categoricas = ["bin_country", "channel", "country", "three_ds_flag", "avs_match", "cvv_result", "merchant_category", "gender"]
-    
-    # Garante que as numéricas existentes na lista sejam float e as de texto sejam string
-    for col in dados_usuario.columns:
-        if col in colunas_numericas:
-            dados_usuario[col] = dados_usuario[col].astype(float)
-        elif col in colunas_categoricas:
-            dados_usuario[col] = dados_usuario[col].astype(str)
-            
+    # 2. Descobrir a ordem exata que o preprocessor espera usando os metadados dele
     try:
-        # 4. Aplicar o pipeline de transformação sem erros de mapeamento posicional
+        if hasattr(preprocessor, "feature_names_in_"):
+            ordem_exata = list(preprocessor.feature_names_in_)
+        else:
+            # Caso o scikit-learn não tenha mapeado os nomes, usamos a lista padrão oficial
+            ordem_exata = [
+                "bin_country", "channel", "country", "three_ds_flag", "avs_match", 
+                "cvv_result", "merchant_category", "amount", "account_age_days", 
+                "promo_used", "avg_amount_user", "total_transactions_user", "shipping_distance_km"
+            ]
+        
+        # Criamos o DataFrame garantindo apenas as colunas necessárias na ordem milimétrica correta
+        dados_usuario = pd.DataFrame([{col: dados_valores[col] for col in ordem_exata}])
+        
+        # 3. Forçar a conversão de tipo coluna por coluna para alinhar com o OneHotEncoder
+        colunas_numericas = ["amount", "account_age_days", "promo_used", "avg_amount_user", "total_transactions_user", "shipping_distance_km"]
+        
+        for col in dados_usuario.columns:
+            if col in colunas_numericas:
+                dados_usuario[col] = dados_usuario[col].astype(float)
+            else:
+                dados_usuario[col] = dados_usuario[col].astype(str)
+                
+    except KeyError as ke:
+        st.error(f"Erro de mapeamento: O seu preprocessor espera uma coluna chamada {ke}, mas ela não foi incluída no app.py.")
+        st.stop()
+
+    try:
+        # 4. Aplicar o pipeline de transformação
         dados_tratados = preprocessor.transform(dados_usuario)
         
         # 5. Fazer a predição e calcular a probabilidade
