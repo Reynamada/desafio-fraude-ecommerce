@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import joblib
 import os
-import requests
+#import requests
 import gdown
 
 # 1. Configurações de Segurança (IDs do Google Drive vindos dos Secrets)
