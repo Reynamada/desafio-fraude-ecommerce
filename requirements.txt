@@ -11,4 +11,5 @@ seaborn
 joblib
 streamlit
 requests
+gdown
 
