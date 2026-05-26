@@ -9,4 +9,6 @@ lightgbm
 matplotlib
 seaborn
 joblib
+streamlit
+requests
 
