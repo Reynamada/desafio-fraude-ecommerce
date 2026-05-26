@@ -38,33 +38,26 @@ st.write("---")
 st.subheader("📋 Inserir Dados da Nova Transação")
 
 with st.form("formulario_fraude"):
-    # Criando colunas para organizar o layout visual
     col1, col2 = st.columns(2)
     
     with col1:
-        amt = st.number_input("Valor da Transação ($)", min_value=0.01, max_value=100000.0, value=50.0, step=0.5)
+        # A variável se chama 'amt' (letras minúsculas)
+        amt = st.number_input("Valor da Transação ($)", min_value=0.01, value=50.0)
+        # A variável se chama 'gender'
         gender = st.selectbox("Gênero do Cliente", ["M", "F"])
         
     with col2:
-        category = st.selectbox("Categoria do Produto", [
-            "shopping_net", "entertainment", "food_dining", 
-            "gas_transport", "grocery_pos", "home", "kids_pets"
-        ]) # Insira aqui as categorias exatas que existiam no seu dataset original
+        # A variável se chama 'category'
+        category = st.selectbox("Categoria do Produto", ["shopping_net", "entertainment", "food_dining"])
         
-    # Se o seu modelo tiver mais variáveis numéricas (como idade, distância, etc.), adicione aqui:
-    # idade = st.slider("Idade do Cliente", 18, 100, 35)
-
-    # Botão de envio do formulário
     submetido = st.form_submit_button("⚡ Avaliar Risco de Fraude")
 
-# 4. Lógica de Predição após o clique
 if submetido:
-    # 1. Construir o DataFrame com o formato EXATO esperado pelo ColumnTransformer
+    # LINHA 62: As variáveis da direita devem bater EXATAMENTE com as de cima
     dados_usuario = pd.DataFrame([{
-        "amt": amt,
-        "category": category,
-        "gender": gender
-        # Se houver mais colunas no X_train original, você DEVE incluí-las aqui na mesma ordem
+        "amt": amt,            # <--- Se lá em cima estiver 'amt', aqui DEVE ser 'amt'
+        "category": category,  # <--- Se lá em cima estiver 'category', aqui DEVE ser 'category'
+        "gender": gender       # <--- Se lá em cima estiver 'gender', aqui DEVE ser 'gender'
     }])
     
     try:
