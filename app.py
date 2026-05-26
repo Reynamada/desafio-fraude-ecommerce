@@ -1,35 +1,25 @@
 import streamlit as st
-import pandas as pd
-import joblib
 import os
-#import requests
+import joblib
 import gdown
 
-# 1. Configurações de Segurança (IDs do Google Drive vindos dos Secrets)
 MODEL_ID = st.secrets["GOOGLE_DRIVE_MODEL_ID"]
-PREPROCESSOR_ID = st.secrets["GOOGLE_DRIVE_PREPROCESSOR_ID"]
-
 NOME_MODELO = "ModeloFinal_SMOTE_LightGBM.pkl"
-NOME_PREPROCESSOR = "preprocessor.pkl"
+NOME_PREPROCESSOR = "preprocessor.pkl" # Ele já estará na pasta raiz pelo GitHub
 
-# Função com Cache para baixar e carregar os arquivos uma única vez
 @st.cache_resource
 def carregar_artefatos():
-    # Baixa o Modelo se não existir localmente no servidor
+    # Baixa APENAS o Modelo do Drive se ele não existir
     if not os.path.exists(NOME_MODELO):
-        with st.spinner("Baixando o modelo preditivo..."):
-            # Usando o parâmetro id de forma direta e limpa
+        with st.spinner("Baixando o modelo preditivo do Google Drive..."):
             gdown.download(id=MODEL_ID, output=NOME_MODELO, quiet=True)
             
-    # Baixa o Pré-processador se não existir localmente
-    if not os.path.exists(NOME_PREPROCESSOR):
-        with st.spinner("Baixando o pré-processador de dados..."):
-            # Correção aqui: passando o ID diretamente de forma isolada
-            gdown.download(id=PREPROCESSOR_ID, output=NOME_PREPROCESSOR, quiet=True)
-            
+    # O preprocessor não precisa de download, o Python lê direto da raiz do GitHub
     modelo = joblib.load(NOME_MODELO)
     preprocessor = joblib.load(NOME_PREPROCESSOR)
     return modelo, preprocessor
+
+modelo, preprocessor = carregar_artefatos()
 # Carrega os cérebros do projeto
 modelo, preprocessor = carregar_artefatos()
 
