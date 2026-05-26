@@ -53,31 +53,44 @@ with st.form("formulario_fraude"):
     submetido = st.form_submit_button("⚡ Avaliar Risco de Fraude")
 
 if submetido:
-    # LINHA 62: As variáveis da direita devem bater EXATAMENTE com as de cima
+    # 1. Criamos o dicionário com TODAS as 13 colunas exatas que o modelo exige.
+    # Mapeamos o que veio do formulário e o resto preenchemos com valores padrão (médias/frequentes).
     dados_usuario = pd.DataFrame([{
-        "amt": amt,            # <--- Se lá em cima estiver 'amt', aqui DEVE ser 'amt'
-        "category": category,  # <--- Se lá em cima estiver 'category', aqui DEVE ser 'category'
-        "gender": gender       # <--- Se lá em cima estiver 'gender', aqui DEVE ser 'gender'
+        # Colunas numéricas (usamos o valor do formulário ou a média estimada do dataset)
+        "amount": amt,                               # O valor que o usuário digitou
+        "account_age_days": 365,                     # Valor padrão neutro
+        "shipping_distance_km": 15.0,                # Valor padrão neutro
+        "avg_amount_user": amt,                      # Assumimos que é igual ao valor atual
+        "total_transactions_user": 5,                # Valor padrão neutro
+        "promo_used": 0,                             # 0 = Não usou promoção (padrão)
+        
+        # Colunas categóricas (mapeamos as do formulário e inventamos padrões para as outras)
+        "merchant_category": category,               # A categoria que o usuário escolheu
+        "gender": gender,                            # O gênero que o usuário escolheu
+        "channel": "web",                            # Valor padrão estável
+        "country": "US",                             # Valor padrão estável
+        "bin_country": "US",                         # Valor padrão estável
+        "three_ds_flag": "N",                        # N = Não tem 3D Secure (padrão)
+        "avs_match": "Y",                            # Y = Bateu o endereço (padrão)
+        "cvv_result": "M"                            # M = CVV Match/Correto (padrão)
     }])
     
     try:
-        # 2. Aplicar o pipeline de escala (StandardScaler) e codificação (OneHotEncoder)
+        # 2. Agora o preprocessor receberá exatamente as colunas que ele espera e não vai quebrar!
         dados_tratados = preprocessor.transform(dados_usuario)
         
-        # 3. Fazer a predição e calcular a probabilidade
+        # 3. Fazer a predição
         predicao = modelo.predict(dados_tratados)
         probabilidade = modelo.predict_proba(dados_tratados)[0][1]
         
-        # 4. Apresentar o resultado de forma visual impactante
+        # 4. Apresentar o resultado
         st.write("### 📊 Resultado da Análise:")
-        
         if predicao[0] == 1:
-            st.error(f"🚨 **TRANSAÇÃO BLOQUEADA:** Alta suspeita de atividade fraudulenta!")
+            st.error(f"🚨 **TRANSAÇÃO BLOQUEADA:** Alta suspeita de fraude!")
             st.metric(label="Risco Estimado", value=f"{probabilidade:.2%}", delta="Crítico", delta_color="inverse")
         else:
-            st.success(f"✅ **TRANSAÇÃO APROVADA:** Comportamento seguro e legítimo.")
+            st.success(f"✅ **TRANSAÇÃO APROVADA:** Comportamento seguro.")
             st.metric(label="Risco Estimado", value=f"{probabilidade:.2%}", delta="Seguro")
             
     except Exception as e:
         st.error(f"Erro no processamento dos dados: {e}")
-        st.info("Verifique se o formulário web contém todas as colunas estruturais que o modelo espera.")
