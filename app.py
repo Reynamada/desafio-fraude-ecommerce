@@ -53,43 +53,50 @@ with st.form("formulario_fraude"):
     submetido = st.form_submit_button("⚡ Avaliar Risco de Fraude")
 
 if submetido:
-    # 1. Criamos o dicionário com TODAS as 13 colunas exatas que o modelo exige.
-    # Mapeamos o que veio do formulário e o resto preenchemos com valores padrão (médias/frequentes).
+    # 1. Criamos os dados garantindo a tipagem correta de cada coluna
     dados_usuario = pd.DataFrame([{
-        # Colunas numéricas (usamos o valor do formulário ou a média estimada do dataset)
-        "amount": amt,                               # O valor que o usuário digitou
-        "account_age_days": 365,                     # Valor padrão neutro
-        "shipping_distance_km": 15.0,                # Valor padrão neutro
-        "avg_amount_user": amt,                      # Assumimos que é igual ao valor atual
-        "total_transactions_user": 5,                # Valor padrão neutro
-        "promo_used": 0,                             # 0 = Não usou promoção (padrão)
+        # Colunas estritamente NUMÉRICAS
+        "amount": float(amt),
+        "account_age_days": float(365),
+        "shipping_distance_km": float(15.0),
+        "avg_amount_user": float(amt),
+        "total_transactions_user": float(5),
+        "promo_used": float(0),
         
-        # Colunas categóricas (mapeamos as do formulário e inventamos padrões para as outras)
-        "merchant_category": category,               # A categoria que o usuário escolheu
-        "gender": gender,                            # O gênero que o usuário escolheu
-        "channel": "web",                            # Valor padrão estável
-        "country": "US",                             # Valor padrão estável
-        "bin_country": "US",                         # Valor padrão estável
-        "three_ds_flag": "N",                        # N = Não tem 3D Secure (padrão)
-        "avs_match": "Y",                            # Y = Bateu o endereço (padrão)
-        "cvv_result": "M"                            # M = CVV Match/Correto (padrão)
+        # Colunas estritamente CATEGÓRICAS (Texto/String)
+        "merchant_category": str(category),
+        "gender": str(gender),
+        "channel": "web",
+        "country": "US",
+        "bin_country": "US",
+        "three_ds_flag": "N",
+        "avs_match": "Y",
+        "cvv_result": "M"
     }])
     
+    # 2. Forçar explicitamente o Pandas a separar os tipos (Prevenção dupla)
+    colunas_numericas = ["amount", "account_age_days", "shipping_distance_km", "avg_amount_user", "total_transactions_user", "promo_used"]
+    colunas_categoricas = ["merchant_category", "gender", "channel", "country", "bin_country", "three_ds_flag", "avs_match", "cvv_result"]
+    
+    # Converte os tipos no DataFrame para garantir o alinhamento com o Colab
+    dados_usuario[colunas_numericas] = dados_usuario[colunas_numericas].astype(float)
+    dados_usuario[colunas_categoricas] = dados_usuario[colunas_categoricas].astype(str)
+    
     try:
-        # 2. Agora o preprocessor receberá exatamente as colunas que ele espera e não vai quebrar!
+        # 3. Aplicar o pipeline de transformação
         dados_tratados = preprocessor.transform(dados_usuario)
         
-        # 3. Fazer a predição
+        # 4. Fazer a predição e calcular a probabilidade
         predicao = modelo.predict(dados_tratados)
         probabilidade = modelo.predict_proba(dados_tratados)[0][1]
         
-        # 4. Apresentar o resultado
+        # 5. Apresentar o resultado visual na tela
         st.write("### 📊 Resultado da Análise:")
         if predicao[0] == 1:
-            st.error(f"🚨 **TRANSAÇÃO BLOQUEADA:** Alta suspeita de fraude!")
+            st.error(f"🚨 **TRANSAÇÃO BLOQUEADA:** Alta suspeita de atividade fraudulenta!")
             st.metric(label="Risco Estimado", value=f"{probabilidade:.2%}", delta="Crítico", delta_color="inverse")
         else:
-            st.success(f"✅ **TRANSAÇÃO APROVADA:** Comportamento seguro.")
+            st.success(f"✅ **TRANSAÇÃO APROVADA:** Comportamento seguro e legítimo.")
             st.metric(label="Risco Estimado", value=f"{probabilidade:.2%}", delta="Seguro")
             
     except Exception as e:
