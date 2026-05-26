@@ -3,33 +3,32 @@ import pandas as pd
 import joblib
 import os
 import requests
+import gdown
 
-# 1. Configuração do ID do arquivo e nome local
-ID_DO_ARQUIVO = 'GOOGLE_DRIVE_MODEL_ID'  
+# Busque o ID do seu segredo configurado no Streamlit Cloud
+ID_DO_ARQUIVO = st.secrets["GOOGLE_DRIVE_MODEL_ID"]
 NOME_ARQUIVO_LOCAL = "ModeloFinal_SMOTE_LightGBM.pkl"
 
 @st.cache_resource
 def baixar_e_carregar_modelo():
-    # Se o modelo não estiver na máquina do servidor do Streamlit, faz o download
+    # Verifica se o modelo já não foi baixado para não repetir o processo
     if not os.path.exists(NOME_ARQUIVO_LOCAL):
-        with st.spinner("Baixando o modelo preditivo do Google Drive... Por favor, aguarde."):
-            # URL de download direto para arquivos públicos do Google Drive
-            url = f"https://docs.google.com/uc?export=download&id={ID_DO_ARQUIVO}"
+        with st.spinner("Baixando o modelo preditivo do Google Drive... Isso pode levar alguns segundos devido ao tamanho do arquivo."):
             
-            # Realiza a requisição e salva o arquivo localmente
-            resposta = requests.get(url, stream=True)
-            if resposta.status_code == 200:
-                with open(NOME_ARQUIVO_LOCAL, "wb") as f:
-                    for chunk in resposta.iter_content(chunk_size=8192):
-                        f.write(chunk)
+            # Monta a URL de download que o gdown precisa
+            url = f"https://drive.google.com/uc?id={ID_DO_ARQUIVO}"
+            
+            try:
+                # O gdown baixa o arquivo e lida com o aviso de vírus automaticamente
+                gdown.download(url, NOME_ARQUIVO_LOCAL, quiet=False)
                 st.success("Download do modelo concluído com sucesso!")
-            else:
-                st.error("Erro ao baixar o modelo. Verifique as permissões do link do Google Drive.")
+            except Exception as e:
+                st.error(f"Erro crítico ao baixar o modelo: {e}")
+                st.info("Verifique se o ID nos Secrets está correto e se o arquivo está público para 'Qualquer pessoa com o link'.")
                 return None
+                
+    # Carrega o modelo na memória
+    return joblib.load(NOME_ARQUIVO_LOCAL)
 
-    # Carrega o modelo usando o joblib
-    modelo = joblib.load(NOME_ARQUIVO_LOCAL)
-    return modelo
-
-# Chamar a função para carregar o modelo na aplicação
+# Ativa a função
 modelo = baixar_e_carregar_modelo()
