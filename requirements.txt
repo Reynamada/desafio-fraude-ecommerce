@@ -1,15 +1,9 @@
 # Dependências do projeto
 kaggle
-pandas
-numpy
-scikit-learn==1.6.1
-imbalanced-learn
-xgboost
-lightgbm
-matplotlib
-seaborn
-joblib
 streamlit
-requests
+pandas
+joblib
 gdown
+lightgbm
+scikit-learn==1.6.1
 
