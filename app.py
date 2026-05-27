@@ -35,6 +35,20 @@ st.write("---")
 
 # 3. Formulário de Entrada de Dados para o Usuário
 st.subheader("📋 Inserir Dados da Nova Transação")
+st.markdown(
+    """
+    Preencha os dados abaixo com as informações da transação que deseja avaliar.
+    - **Valor da Transação:** valor total em dólares US$.
+    - **Categoria do Produto:** escolha a categoria que melhor representa o item comprado.
+    - **Dias desde o cadastro do cliente:** idade da conta do usuário em dias.
+    - **Total de transações do usuário:** quantas compras o usuário já realizou.
+    - **Distância do envio (km):** distância entre o endereço do cliente e o local de envio.
+    - **Promoção / cupom usado:** indica se algum desconto ou cupom foi aplicado.
+    - **3DS ativado:** indica se a autenticação 3D Secure foi usada na transação.
+    - **AVS corresponde:** indica se o endereço informado bateu com o cadastro do cartão.
+    - **Resultado do CVV:** resultado da verificação do código de segurança.
+    """
+)
 
 with st.form("formulario_fraude"):
     col1, col2 = st.columns(2)
@@ -47,10 +61,15 @@ with st.form("formulario_fraude"):
 
     with col2:
         shipping_distance_km = st.number_input("Distância do envio (km)", min_value=0.0, value=15.0)
+        st.caption("Distância estimada entre a origem do envio e o destino final.")
         promo_used = st.selectbox("Promoção / cupom usado", ["Não", "Sim"])
+        st.caption("Sim = desconto aplicado na compra; Não = preço normal.")
         three_ds_flag = st.selectbox("3DS ativado", ["N", "Y"])
+        st.caption("Y = autenticação 3D Secure usada; N = não usada.")
         avs_match = st.selectbox("AVS corresponde", ["N", "Y"])
+        st.caption("Y = endereço conferido pelo emissor do cartão; N = divergente.")
         cvv_result = st.selectbox("Resultado do CVV", ["M", "N", "U"])
+        st.caption("M = código de segurança válido; N = inválido; U = não disponível.")
 
     submetido = st.form_submit_button("⚡ Avaliar Risco de Fraude")
 
