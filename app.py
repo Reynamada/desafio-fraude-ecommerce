@@ -40,35 +40,38 @@ with st.form("formulario_fraude"):
     col1, col2 = st.columns(2)
 
     with col1:
-        # A variável se chama 'amt' (letras minúsculas)
         amt = st.number_input("Valor da Transação ($)", min_value=0.01, value=50.0)
         category = st.selectbox("Categoria do Produto", ["shopping_net", "entertainment", "food_dining"])
+        account_age_days = st.number_input("Dias desde o cadastro do cliente", min_value=0, value=365)
+        total_transactions_user = st.number_input("Total de transações do usuário", min_value=0, value=5)
 
     with col2:
-        # Espaço reservado para manter o layout da página
-        st.write(" ")
-        st.write(" ")
-        st.write(" ")
-        st.write(" ")
+        shipping_distance_km = st.number_input("Distância do envio (km)", min_value=0.0, value=15.0)
+        promo_used = st.selectbox("Promoção / cupom usado", ["Não", "Sim"])
+        three_ds_flag = st.selectbox("3DS ativado", ["N", "Y"])
+        avs_match = st.selectbox("AVS corresponde", ["N", "Y"])
+        cvv_result = st.selectbox("Resultado do CVV", ["M", "N", "U"])
 
     submetido = st.form_submit_button("⚡ Avaliar Risco de Fraude")
 
 if submetido:
     # 1. Criamos um dicionário com as colunas que o modelo realmente usa
+    # O preprocessor foi treinado com estes campos já numéricos, então
+    # precisamos converter os flags/códigos para números antes da transformação.
     dados_valores = {
         "amount": float(amt),
         "merchant_category": str(category),
         "bin_country": "US",
         "channel": "web",
         "country": "US",
-        "three_ds_flag": "N",
-        "avs_match": "Y",
-        "cvv_result": "M",
-        "account_age_days": float(365),
-        "promo_used": float(0),
+        "three_ds_flag": 1.0 if three_ds_flag == "Y" else 0.0,
+        "avs_match": 1.0 if avs_match == "Y" else 0.0,
+        "cvv_result": 1.0 if cvv_result == "M" else (0.0 if cvv_result == "N" else 2.0),
+        "account_age_days": float(account_age_days),
+        "promo_used": 1.0 if promo_used == "Sim" else 0.0,
         "avg_amount_user": float(amt),
-        "total_transactions_user": float(5),
-        "shipping_distance_km": float(15.0)
+        "total_transactions_user": float(total_transactions_user),
+        "shipping_distance_km": float(shipping_distance_km)
     }
     
     # 2. Descobrir a ordem exata que o preprocessor espera usando os metadados dele
@@ -86,8 +89,11 @@ if submetido:
         # Criamos o DataFrame garantindo apenas as colunas necessárias na ordem milimétrica correta
         dados_usuario = pd.DataFrame([{col: dados_valores[col] for col in ordem_exata}])
         
-        # 3. Forçar a conversão de tipo coluna por coluna para alinhar com o OneHotEncoder
-        colunas_numericas = ["amount", "account_age_days", "promo_used", "avg_amount_user", "total_transactions_user", "shipping_distance_km"]
+        # 3. Forçar a conversão de tipo coluna por coluna para alinhar com o pipeline
+        colunas_numericas = [
+            "amount", "account_age_days", "promo_used", "avg_amount_user", "total_transactions_user", 
+            "shipping_distance_km", "three_ds_flag", "avs_match", "cvv_result"
+        ]
         
         for col in dados_usuario.columns:
             if col in colunas_numericas:
