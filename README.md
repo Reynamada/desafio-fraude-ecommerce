@@ -88,3 +88,16 @@ O pipeline final extrai de forma 100% matemática a melhor combinação com base
 1. Certifique-se de preencher as variáveis do Kaggle no ambiente seguro do seu notebook (`KAGGLE_USERNAME` e `KAGGLE_KEY`).
 2. Execute as células em sequência.
 3. O modelo final treinado será gerado no diretório raiz, acompanhado do relatório CSV com o desempenho detalhado de todos os cenários testados.
+
+## Interfaz Grafica com Streamlit : [https://desafio-detecfraude-ecommerce.streamlit.app]
+O usuario pode Avaliar riscos de fraude de transações financeiras em plataformas de e-commerce utilizando um modelo otimizado de LightGBM com balanceamento SMOTE.
+Dados solicitados: 
+Valor da Transação: valor total em dólares US$.
+Categoria do Produto: escolha a categoria que melhor representa o item comprado.
+Dias desde o cadastro do cliente: idade da conta do usuário em dias.
+Total de transações do usuário: quantas compras o usuário já realizou.
+Distância do envio (km): distância entre o endereço do cliente e o local de envio.
+Promoção / cupom usado: indica se algum desconto ou cupom foi aplicado.
+3DS ativado: indica se a autenticação 3D Secure foi usada na transação.
+AVS corresponde: indica se o endereço informado bateu com o cadastro do cartão.
+Resultado do CVV: resultado da verificação do código de segurança.
