@@ -20,7 +20,6 @@ def carregar_artefatos():
     preprocessor = joblib.load(NOME_PREPROCESSOR)
     return modelo, preprocessor
 
-modelo, preprocessor = carregar_artefatos()
 # Carrega os cérebros do projeto
 modelo, preprocessor = carregar_artefatos()
 
@@ -39,25 +38,26 @@ st.subheader("📋 Inserir Dados da Nova Transação")
 
 with st.form("formulario_fraude"):
     col1, col2 = st.columns(2)
-    
+
     with col1:
         # A variável se chama 'amt' (letras minúsculas)
         amt = st.number_input("Valor da Transação ($)", min_value=0.01, value=50.0)
-        # A variável se chama 'gender'
-        gender = st.selectbox("Gênero do Cliente", ["M", "F"])
-        
-    with col2:
-        # A variável se chama 'category'
         category = st.selectbox("Categoria do Produto", ["shopping_net", "entertainment", "food_dining"])
-        
+
+    with col2:
+        # Espaço reservado para manter o layout da página
+        st.write(" ")
+        st.write(" ")
+        st.write(" ")
+        st.write(" ")
+
     submetido = st.form_submit_button("⚡ Avaliar Risco de Fraude")
 
 if submetido:
-    # 1. Criamos um dicionário com TODAS as colunas possíveis mapeadas no modelo
+    # 1. Criamos um dicionário com as colunas que o modelo realmente usa
     dados_valores = {
         "amount": float(amt),
         "merchant_category": str(category),
-        "gender": str(gender),
         "bin_country": "US",
         "channel": "web",
         "country": "US",
@@ -76,11 +76,11 @@ if submetido:
         if hasattr(preprocessor, "feature_names_in_"):
             ordem_exata = list(preprocessor.feature_names_in_)
         else:
-            # Caso o scikit-learn não tenha mapeado os nomes, usamos a lista padrão oficial
+            # Caso o scikit-learn não tenha mapeado os nomes, usamos a lista de colunas esperada pelo pipeline
             ordem_exata = [
-                "bin_country", "channel", "country", "three_ds_flag", "avs_match", 
-                "cvv_result", "merchant_category", "amount", "account_age_days", 
-                "promo_used", "avg_amount_user", "total_transactions_user", "shipping_distance_km"
+                "account_age_days", "total_transactions_user", "avg_amount_user", "amount",
+                "country", "bin_country", "channel", "merchant_category", "promo_used",
+                "avs_match", "cvv_result", "three_ds_flag", "shipping_distance_km"
             ]
         
         # Criamos o DataFrame garantindo apenas as colunas necessárias na ordem milimétrica correta
